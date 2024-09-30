@@ -1,3 +1,5 @@
-COURIER_URL = "https://qa-scooter.praktikum-services.ru/api/v1/courier"
-LOGIN_URL = "https://qa-scooter.praktikum-services.ru/api/v1/courier/login"
-ORDER_URL = "https://qa-scooter.praktikum-services.ru/api/v1/orders"
+BASE_URL = "https://qa-scooter.praktikum-services.ru/api/v1"
+
+COURIER_URL = f"{BASE_URL}/courier"
+LOGIN_URL = f"{BASE_URL}/courier/login"
+ORDER_URL = f"{BASE_URL}/orders"

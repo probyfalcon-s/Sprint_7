@@ -1,37 +1,34 @@
 import pytest
 import allure
 import requests
-from requests import Response
 from src.config import COURIER_URL
+from src.helpers import generate_random_string
+from src.api_requests import create_courier
 
 
 class TestCreateCourier:
-    def create_courier(self, login: str, password: str, first_name: str) -> Response:
-        payload = {"login": login, "password": password, "firstName": first_name}
-        return requests.post(COURIER_URL, json=payload)
-
+    @allure.title("Создание курьера")
     def test_create_courier_done(self, generate_random_string):
-        with allure.step(f"Создание курьера"):
-            login = generate_random_string(10)
-            password = generate_random_string(10)
-            first_name = generate_random_string(10)
+        login = generate_random_string(10)
+        password = generate_random_string(10)
+        first_name = generate_random_string(10)
 
-        response = self.create_courier(login, password, first_name)
+        response = create_courier(login, password, first_name)
 
         assert (
             response.status_code == 201
         ), f"Ожидаю 201, а получил {response.status_code}"
         assert response.json().get("ok") is True, "Тело состоит из {'ok': true}"
 
+    @allure.title("Невозможность создать двух одинаковых курьеров")
     def test_create_duplicate_courier(self, generate_random_string):
-        with allure.step(f"Невозможность создать двух одинаковых курьеров"):
-            login = generate_random_string(10)
-            password = generate_random_string(10)
-            first_name = generate_random_string(10)
+        login = generate_random_string(10)
+        password = generate_random_string(10)
+        first_name = generate_random_string(10)
 
-        self.create_courier(login, password, first_name)
+        create_courier(login, password, first_name)
 
-        response = self.create_courier(login, password, first_name)
+        response = create_courier(login, password, first_name)
 
         assert (
             response.status_code == 409
@@ -40,6 +37,7 @@ class TestCreateCourier:
             "Этот логин уже используется" in response.text
         ), "Этот логин уже используется"
 
+    @allure.title("Передача всех обязательных полей")
     @pytest.mark.xfailed
     @pytest.mark.parametrize("missing_field", ["login", "password", "firstName"])
     def test_create_courier_missing_fields(self, generate_random_string, missing_field):
@@ -60,26 +58,29 @@ class TestCreateCourier:
             "Недостаточно данных для создания учетной записи" in response.text
         ), "Недостаточно данных для создания учетной записи"
 
+    @allure.title("Проверка кода ответа")
     def test_correct_code(self, generate_random_string):
         login = generate_random_string(10)
         password = generate_random_string(10)
         first_name = generate_random_string(10)
 
-        response = self.create_courier(login, password, first_name)
+        response = create_courier(login, password, first_name)
 
         assert (
             response.status_code == 201
         ), f"ожидаю 201, получаю {response.status_code}"
 
+    @allure.title("Успешный запрос возвращает {'ok' true}")
     def test_successful_response_contains(self, generate_random_string):
         login = generate_random_string(10)
         password = generate_random_string(10)
         first_name = generate_random_string(10)
 
-        response = self.create_courier(login, password, first_name)
+        response = create_courier(login, password, first_name)
 
         assert response.json().get("ok") is True, "ожидаю {'ok': True} в ответе"
 
+    @allure.title("ошибка, если нет одного из полей")
     def test_create_courier_missing_field_error(self, generate_random_string):
         login = generate_random_string(10)
         password = generate_random_string(10)
@@ -91,15 +92,16 @@ class TestCreateCourier:
         assert response.status_code == 400, "Ожидаю 400"
         assert "Недостаточно данных для создания учетной записи" in response.text
 
+    @allure.title("ошибка, если создать пользователя с уже существующим логином")
     @pytest.mark.xfailed
     def test_create_courier_returns_error(self, generate_random_string):
         login = generate_random_string(10)
         password = generate_random_string(10)
         first_name = generate_random_string(10)
 
-        self.create_courier(login, password, first_name)
+        create_courier(login, password, first_name)
 
-        response = self.create_courier(
+        response = create_courier(
             login, generate_random_string(10), generate_random_string(10)
         )
 
